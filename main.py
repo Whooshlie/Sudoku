@@ -2,6 +2,7 @@ import queue
 import time
 from tkinter import *
 import random
+import generate_sudoku
 
 GAP = 10
 SHIFT = 50
@@ -41,8 +42,13 @@ class sudoku:
             self.map.append(a)
             for j in range(0, 9):
                 a.append(point(i, j))
-
-        #qself.map[3][3].locked = True
+        m = generate_sudoku.generate_sudoku()
+        for i in range(0, 9):
+            for j in range(0, 9):
+                if m[i][j] != 0:
+                    self.map[i][j].value = m[i][j]
+                    self.map[i][j].locked = True
+        # qself.map[3][3].locked = True
         self.chosen = self.map[0][0]
         self.drawMap()
 
@@ -71,12 +77,13 @@ class sudoku:
             if self.map[i][y].value == value and i != x:
                 return False
 
-        square = (x//3, y//3)
+        square = (x // 3, y // 3)
         for i in range(0, 3):
             x_check = square[0] * 3 + i
             for j in range(0, 3):
                 y_check = square[1] * 3 + j
-                if self.map[x_check][y_check].value == value and (x_check != x or y_check != y):
+                if self.map[x_check][y_check].value == value and (
+                        x_check != x or y_check != y):
                     return False
 
         return True
@@ -97,7 +104,8 @@ class sudoku:
 
     def drawMap(self):
         self.canvas.delete("all")
-
+        if self.chosen is None:
+            a = 1
         for i in range(0, 10):
             linewith = 1
             if i % 3 == 0:
@@ -118,7 +126,6 @@ class sudoku:
                                          GAP + ((self.chosen.y + 1) * SHIFT),
                                          fill="green")
 
-
         for i in range(0, 9):
             for j in range(0, 9):
                 if self.map[i][j].locked:
@@ -127,7 +134,7 @@ class sudoku:
                                                  GAP + ((i + 1) * SHIFT) - 1,
                                                  GAP + ((j + 1) * SHIFT) - 1,
                                                  fill="grey")
-                if self.map[i][j].value == self.chosen.value is not None\
+                if self.chosen is not None and self.map[i][j].value == self.chosen.value is not None\
                         and self.map[i][j] != self.chosen:
                     self.canvas.create_rectangle(GAP + (i * SHIFT) + 1,
                                                  GAP + (j * SHIFT) + 1,
