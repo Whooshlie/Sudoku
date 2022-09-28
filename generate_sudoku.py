@@ -1,8 +1,10 @@
 import copy
 import random
 
+TRY = 50
 
-def possible_value(i:int, sudoku: list[list[int]]):
+
+def possible_value(i: int, sudoku: list[list[int]]):
     poss = {1, 2, 3, 4, 5, 6, 7, 8, 9}
     x = i // 9
     y = i % 9
@@ -12,7 +14,7 @@ def possible_value(i:int, sudoku: list[list[int]]):
         if sudoku[i][y] in poss:
             poss.remove(sudoku[i][y])
 
-    square = (x//3, y//3)
+    square = (x // 3, y // 3)
     for i in range(0, 3):
         x_check = square[0] * 3 + i
         for j in range(0, 3):
@@ -23,7 +25,6 @@ def possible_value(i:int, sudoku: list[list[int]]):
 
 
 def generate_full_recur(i: int, sudoku: list[list[int]]):
-
     if i == 81:
         return True, sudoku
 
@@ -45,15 +46,21 @@ def generate_full_recur(i: int, sudoku: list[list[int]]):
 
     return False, sudoku
 
+
 def generate_full():
     sudoku = [[0] * 9 for x in range(0, 9)]
     return generate_full_recur(0, sudoku)[1]
 
-def check_solution_recur(i: int, sudoku: list[list[int]]):
+
+def check_solution_recur(i: int, sudoku: list[list[int]], num):
     x = i // 9
     y = i % 9
 
+    if num[0] > 1:
+        return 0
+
     if i == 81:
+        num[0] += 1
         return 1
 
     while sudoku[x][y] != 0:
@@ -69,29 +76,29 @@ def check_solution_recur(i: int, sudoku: list[list[int]]):
     for j in range(len(poss)):
         sudoku_curr = copy.deepcopy(sudoku)
         sudoku_curr[x][y] = poss[j]
-        out += check_solution_recur(j + 1, sudoku_curr)
+        out += check_solution_recur(j + 1, sudoku_curr, num)
     return out
 
-def check_solution(sudoku: list[list[int]]):
-    return check_solution_recur(0, sudoku)
+
+def have_unique_solution(sudoku: list[list[int]]):
+    return check_solution_recur(0, sudoku, [0]) == 1
+
 
 def generate_sudoku():
     sudoku = generate_full()
     check = list(range(0, 81))
     random.shuffle(check)
     test = 0
-    for j, i in enumerate(check[:60]):
+    for j, i in enumerate(check[0:TRY]):
         x = i // 9
         y = i % 9
         c = sudoku[x][y]
         sudoku[x][y] = 0
 
-        if a := check_solution(sudoku) != 1:
+        if a := not have_unique_solution(sudoku):
             sudoku[x][y] = c
         else:
             test += 1
         print(a, j)
     print(test)
     return sudoku
-
-

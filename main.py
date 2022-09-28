@@ -1,7 +1,4 @@
-import queue
-import time
 from tkinter import *
-import random
 import generate_sudoku
 
 GAP = 10
@@ -49,7 +46,7 @@ class sudoku:
                     self.map[i][j].value = m[i][j]
                     self.map[i][j].locked = True
         # qself.map[3][3].locked = True
-        self.chosen = self.map[0][0]
+        self.chosen = None
         self.drawMap()
 
     def key(self, event):
@@ -57,7 +54,7 @@ class sudoku:
         if self.chosen is None:
             return
         if event.char in valid_val:
-            if self.check_valid(int(event.char), self.chosen.x, self.chosen.y):
+            if not self.chosen.locked and self.check_valid(int(event.char), self.chosen.x, self.chosen.y):
                 self.chosen.value = int(event.char)
         else:
             self.chosen.value = None
@@ -88,6 +85,23 @@ class sudoku:
 
         return True
 
+    def check_possible(self, x, y):
+        poss = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+        for i in range(0, 9):
+            if self.map[x][i].value in poss:
+                poss.remove(self.map[x][i].value)
+            if self.map[i][y].value in poss:
+                poss.remove(self.map[i][y].value)
+
+        square = (x // 3, y // 3)
+        for i in range(0, 3):
+            x_check = square[0] * 3 + i
+            for j in range(0, 3):
+                y_check = square[1] * 3 + j
+                if self.map[x_check][y_check].value in poss:
+                    poss.remove(self.map[x_check][y_check].value)
+        return poss
+
     def callback(self, event):
         mouse_loc = (event.x, event.y)
         print(mouse_loc)
@@ -104,8 +118,6 @@ class sudoku:
 
     def drawMap(self):
         self.canvas.delete("all")
-        if self.chosen is None:
-            a = 1
         for i in range(0, 10):
             linewith = 1
             if i % 3 == 0:
@@ -129,10 +141,10 @@ class sudoku:
         for i in range(0, 9):
             for j in range(0, 9):
                 if self.map[i][j].locked:
-                    self.canvas.create_rectangle(GAP + (i * SHIFT) + 1,
-                                                 GAP + (j * SHIFT) + 1,
-                                                 GAP + ((i + 1) * SHIFT) - 1,
-                                                 GAP + ((j + 1) * SHIFT) - 1,
+                    self.canvas.create_rectangle(GAP + (i * SHIFT) + 3,
+                                                 GAP + (j * SHIFT) + 3,
+                                                 GAP + ((i + 1) * SHIFT) - 3,
+                                                 GAP + ((j + 1) * SHIFT) - 3,
                                                  fill="grey")
                 if self.chosen is not None and self.map[i][j].value == self.chosen.value is not None\
                         and self.map[i][j] != self.chosen:
@@ -147,9 +159,29 @@ class sudoku:
                         GAP + (j * SHIFT) + (SHIFT // 2),
                         text=str(self.map[i][j].value), font=("Purisa", 15))
 
+        if self.chosen is None:
+            poss = {}
+        else:
+            poss = self.check_possible(self.chosen.x, self.chosen.y)
+        for i in range(0, 9):
+            color = "Green"
+            if i + 1 not  in poss:
+                color = "#D3D3D3"
+            self.canvas.create_rectangle(GAP + (i * SHIFT) + 1,
+                                         GAP + (10 * SHIFT) + 1,
+                                         GAP + ((i + 1) * SHIFT) - 1,
+                                         GAP + ((11) * SHIFT) - 1,
+                                         fill=color)
+            self.canvas.create_text(
+                GAP + (i * SHIFT) + (SHIFT // 2),
+                GAP + (10 * SHIFT) + (SHIFT // 2),
+                text=str(i + 1), font=("Purisa", 15))
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     root = Tk()
-    a = sudoku(root)
-    root.mainloop()
+    while True:
+        a = sudoku(root)
+        root.mainloop()
